@@ -15,41 +15,48 @@ import { formatDate, todayISO, type Project } from "../../data";
 import { MILESTONES, progressSeries, type ProjectEvent } from "../../history";
 import { phasesFor, fmtDay } from "../../project";
 import { cn } from "../../utils/cn";
+import { chartPalette, useIsDarkMode } from "../../utils/theme";
 import { Card, StatusBadge } from "../../components/ui";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
-const chartOptions: ChartOptions<"line"> = {
-  responsive: true,
-  maintainAspectRatio: false,
-  interaction: { mode: "index", intersect: false },
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      backgroundColor: "#0f172a",
-      padding: 10,
-      cornerRadius: 6,
-      displayColors: false,
-      titleFont: { size: 12 },
-      bodyFont: { size: 12 },
-      callbacks: { label: (ctx) => `Avancement : ${ctx.parsed.y} %` },
+function getChartOptions(isDark: boolean): ChartOptions<"line"> {
+  const p = chartPalette(isDark);
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: "index", intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: p.tooltipBg,
+        padding: 10,
+        cornerRadius: 6,
+        displayColors: false,
+        titleFont: { size: 12 },
+        bodyFont: { size: 12 },
+        callbacks: { label: (ctx) => `Avancement : ${ctx.parsed.y} %` },
+      },
     },
-  },
-  scales: {
-    x: { grid: { display: false }, border: { color: "#e5e7eb" }, ticks: { color: "#9ca3af", font: { size: 11 } } },
-    y: {
-      min: 0,
-      max: 100,
-      grid: { color: "#eef0f3" },
-      border: { display: false },
-      ticks: { color: "#9ca3af", font: { size: 11 }, stepSize: 25, callback: (v) => `${v} %` },
+    scales: {
+      x: { grid: { display: false }, border: { color: p.axisLine }, ticks: { color: p.tick, font: { size: 11 } } },
+      y: {
+        min: 0,
+        max: 100,
+        grid: { color: p.grid },
+        border: { display: false },
+        ticks: { color: p.tick, font: { size: 11 }, stepSize: 25, callback: (v) => `${v} %` },
+      },
     },
-  },
-};
+  };
+}
 
 /* ---------- Briques partagées de l'onglet Aperçu ---------- */
 
 export function EvolutionChart({ project, events }: { project: Project; events?: ProjectEvent[] }) {
+  const isDark = useIsDarkMode();
+  const p = chartPalette(isDark);
+  const lineColor = isDark ? "#8fb0dd" : "#0f172a";
   const series = progressSeries(project, events);
   const data = {
     labels: series.labels,
@@ -57,15 +64,15 @@ export function EvolutionChart({ project, events }: { project: Project; events?:
       {
         label: "Avancement",
         data: series.values,
-        borderColor: "#0f172a",
-        backgroundColor: "rgba(15,23,42,0.07)",
+        borderColor: lineColor,
+        backgroundColor: isDark ? "rgba(143,176,221,0.14)" : "rgba(15,23,42,0.07)",
         fill: true,
         tension: 0.35,
         borderWidth: 2,
         pointRadius: 3.5,
         pointHoverRadius: 5,
-        pointBackgroundColor: "#ffffff",
-        pointBorderColor: "#0f172a",
+        pointBackgroundColor: p.surface,
+        pointBorderColor: lineColor,
         pointBorderWidth: 2,
       },
     ],
@@ -77,7 +84,7 @@ export function EvolutionChart({ project, events }: { project: Project; events?:
         <span className="text-xs text-gray-500">Du début à l'échéance</span>
       </div>
       <div className="mt-5 h-56 sm:h-64">
-        <Line data={data} options={chartOptions} />
+        <Line data={data} options={getChartOptions(isDark)} />
       </div>
     </Card>
   );
