@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from "react";
-import { CheckCircle2, Clock3, MessageSquarePlus, Plus, XCircle } from "lucide-react";
+import { CheckCircle2, Clock3, MessageSquareOff, MessageSquarePlus, Plus, XCircle } from "lucide-react";
 import type { Project } from "../../data";
 import { formatDateTime } from "../../history";
 import { useApp } from "../../store";
 import { cn } from "../../utils/cn";
-import { Card, Field, GhostButton, Modal, PrimaryButton, inputClass } from "../../components/ui";
+import { Card, EmptyState, Field, GhostButton, Modal, PrimaryButton, inputClass } from "../../components/ui";
 
 const REQ_BADGE = {
   "en-attente": { label: "En attente", cls: "bg-amber-50 text-amber-700", icon: Clock3 },
@@ -80,9 +80,11 @@ export function RequestsTab({ project, mode, clientActor }: { project: Project; 
           );
         })}
         {rows.length === 0 && (
-          <p className="px-6 py-10 text-center text-sm text-gray-500">
-            Aucune demande de modification sur ce projet.
-          </p>
+          <EmptyState
+            icon={MessageSquareOff}
+            title="Aucune demande de modification sur ce projet"
+            hint={mode === "client" ? "Vous pouvez en soumettre une à tout moment." : undefined}
+          />
         )}
       </Card>
 
