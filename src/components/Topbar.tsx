@@ -4,6 +4,7 @@ import { timeAgo } from "../data";
 import { useApp, useNow } from "../store";
 import { cn } from "../utils/cn";
 import { NotificationGlyph } from "./glyph";
+import { ThemeMenu } from "./ThemeMenu";
 import { GhostButton, Modal, PrimaryButton } from "./ui";
 
 function BellMenu() {
@@ -137,7 +138,10 @@ export function Topbar() {
         <span className="text-base font-bold tracking-tight text-gray-900 lg:hidden">Suivi Projets</span>
 
         <div className="ml-auto flex items-center gap-3 sm:gap-5">
-          <BellMenu />
+          <div className="flex items-center gap-1">
+            <ThemeMenu />
+            <BellMenu />
+          </div>
           <span className="hidden h-8 w-px bg-gray-200 sm:block" aria-hidden="true" />
           <div className="hidden leading-tight sm:block">
             <p className="text-[13px] font-semibold text-gray-900">Alice Admin</p>

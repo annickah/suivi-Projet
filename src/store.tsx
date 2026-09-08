@@ -47,11 +47,27 @@ function parseHash(): RouteId {
   return (ROUTES.find((r) => r.id === h)?.id ?? "notifications") as RouteId;
 }
 
+export type ThemeMode = "system" | "light" | "dark";
+const THEME_STORAGE_KEY = "suivi-projets-theme";
+
+function readStoredTheme(): ThemeMode {
+  try {
+    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+    if (stored === "light" || stored === "dark" || stored === "system") return stored;
+  } catch {
+    // stockage indisponible (navigation privée…) : on retombe sur le système
+  }
+  return "system";
+}
+
 interface AppState {
   route: RouteId;
   navigate: (r: RouteId) => void;
   menuOpen: boolean;
   setMenuOpen: (v: boolean) => void;
+  theme: ThemeMode;
+  setTheme: (t: ThemeMode) => void;
+  isDark: boolean;
   signedIn: boolean;
   signIn: () => void;
   signOut: () => void;
@@ -116,6 +132,10 @@ const nextId = () => ++uid;
 export function AppProvider({ children }: { children: ReactNode }) {
   const [route, setRoute] = useState<RouteId>(() => parseHash());
   const [menuOpen, setMenuOpen] = useState(false);
+  const [theme, setThemeState] = useState<ThemeMode>(() => readStoredTheme());
+  const [systemPrefersDark, setSystemPrefersDark] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches,
+  );
   const [signedIn, setSignedIn] = useState(true);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [projects, setProjects] = useState<Project[]>(seedProjects);
@@ -143,6 +163,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
+
+  const setTheme = useCallback((t: ThemeMode) => {
+    setThemeState(t);
+    try {
+      window.localStorage.setItem(THEME_STORAGE_KEY, t);
+    } catch {
+      // stockage indisponible : le choix reste actif pour la session en cours
+    }
+  }, []);
+
+  // Applique (ou retire) data-theme sur <html> : c'est ce sélecteur que lit
+  // index.css pour faire primer un choix explicite sur la préférence système.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "system") root.removeAttribute("data-theme");
+    else root.dataset.theme = theme;
+  }, [theme]);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = (e: MediaQueryListEvent) => setSystemPrefersDark(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  const isDark = theme === "dark" || (theme === "system" && systemPrefersDark);
 
   useEffect(() => {
     const label = ROUTES.find((r) => r.id === route)?.label ?? "Notifications";
@@ -506,6 +552,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     navigate,
     menuOpen,
     setMenuOpen,
+    theme,
+    setTheme,
+    isDark,
     signedIn,
     signIn,
     signOut,

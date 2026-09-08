@@ -1,23 +1,13 @@
-import { useEffect, useState } from "react";
+import { useApp } from "../store";
 
 /**
- * Suit la préférence de thème du système (prefers-color-scheme).
- * Nécessaire uniquement pour ce que le CSS ne peut pas adapter tout seul,
- * comme les couleurs dessinées sur un <canvas> par Chart.js.
+ * Thème effectif (système ou choisi explicitement via le sélecteur de
+ * thème). Nécessaire uniquement pour ce que le CSS ne peut pas adapter tout
+ * seul, comme les couleurs dessinées sur un <canvas> par Chart.js — pour
+ * tout le reste, les variables de couleur d'index.css suffisent.
  */
 export function useIsDarkMode(): boolean {
-  const [isDark, setIsDark] = useState(
-    () => typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches,
-  );
-
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const onChange = (e: MediaQueryListEvent) => setIsDark(e.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-
-  return isDark;
+  return useApp().isDark;
 }
 
 /**

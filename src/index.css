@@ -6,6 +6,12 @@
   --color-ink-soft: #1e293b;
   --color-canvas: #f4f5f7;
   --color-hairline: #e5e7eb;
+  /* Bandeaux "de marque" volontairement sombres dans les deux thèmes (panneau
+     de connexion, bannière de l'espace client) — contrairement à `ink`, qui
+     devient un accent clair en mode sombre pour rester lisible sur fond
+     sombre, `brand` ne change jamais : il n'est jamais utilisé comme texte
+     ou bordure sur un fond clair, seulement comme fond avec du texte blanc. */
+  --color-brand: #0f172a;
   /* Fond des cartes, modales, menus et champs — distinct de "white" pur,
      qui reste réservé au texte/icônes posés sur un fond de couleur (boutons,
      avatars, toasts) et ne doit donc jamais changer avec le thème. */
@@ -17,6 +23,10 @@ html {
   text-rendering: optimizeLegibility;
   color-scheme: light dark;
 }
+/* Un choix explicite (bouton de thème) prime toujours sur la préférence
+   système, dans les deux sens. */
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
 
 body {
   font-family: var(--font-sans);
@@ -60,19 +70,21 @@ body {
    text-ink, ring-emerald-600/20…) lit sa couleur via var(--color-*).
    Ce bloc n'est pas imbriqué dans un @layer : il passe donc toujours
    devant les valeurs par défaut de Tailwind (elles, en @layer theme),
-   sans avoir à toucher un seul composant. */
+   sans avoir à toucher un seul composant.
+
+   La même palette s'applique dans deux cas : automatiquement selon la
+   préférence système (sauf si l'utilisateur a explicitement choisi le mode
+   clair via le sélecteur de thème), ou explicitement via [data-theme="dark"]
+   posé sur <html> par ce même sélecteur — qui l'emporte alors sur le
+   système, dans les deux sens. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --color-canvas: #0a0c10;
     --color-surface: #14171f;
     --color-hairline: #262b35;
     --color-ink: #6d92c9;
     --color-ink-soft: #8fb0dd;
 
-    /* Échelle gray/slate : on échange chaque palier avec son symétrique
-       (50↔900, 100↔800…) pour que les titres (gray-900) deviennent clairs,
-       les textes discrets (gray-400/500) restent discrets, et les fonds
-       subtils (gray-50/100) restent plus foncés que les cartes. */
     --color-gray-50: oklch(21% .034 264.665);
     --color-gray-100: oklch(27.8% .033 256.848);
     --color-gray-200: oklch(37.3% .034 259.733);
@@ -93,9 +105,6 @@ body {
     --color-slate-600: oklch(86.9% .022 252.894);
     --color-slate-700: oklch(92.9% .013 255.508);
 
-    /* Pastilles de statut (amber/emerald/red/sky) : le fond très pâle -50/-100
-       devient une teinte translucide dérivée de la couleur -500 (inchangée),
-       et le texte -700 s'éclaircit pour rester lisible sur fond sombre. */
     --color-amber-50: color-mix(in oklch, var(--color-amber-500) 16%, transparent);
     --color-amber-100: color-mix(in oklch, var(--color-amber-500) 26%, transparent);
     --color-amber-700: #fbbf24;
@@ -112,12 +121,62 @@ body {
     --color-sky-700: #38bdf8;
   }
 
-  * {
+  :root:not([data-theme="light"]) * {
     scrollbar-color: #3a4150 transparent;
   }
-  *::-webkit-scrollbar-thumb {
+  :root:not([data-theme="light"]) *::-webkit-scrollbar-thumb {
     background: #3a4150;
   }
+}
+
+:root[data-theme="dark"] {
+  --color-canvas: #0a0c10;
+  --color-surface: #14171f;
+  --color-hairline: #262b35;
+  --color-ink: #6d92c9;
+  --color-ink-soft: #8fb0dd;
+
+  --color-gray-50: oklch(21% .034 264.665);
+  --color-gray-100: oklch(27.8% .033 256.848);
+  --color-gray-200: oklch(37.3% .034 259.733);
+  --color-gray-300: oklch(44.6% .03 256.802);
+  --color-gray-400: oklch(55.1% .027 264.364);
+  --color-gray-500: oklch(70.7% .022 261.325);
+  --color-gray-600: oklch(87.2% .01 258.338);
+  --color-gray-700: oklch(92.8% .006 264.531);
+  --color-gray-800: oklch(96.7% .003 264.542);
+  --color-gray-900: oklch(98.5% .002 247.839);
+
+  --color-slate-50: #0f172a;
+  --color-slate-100: #1e293b;
+  --color-slate-200: oklch(37.2% .044 257.287);
+  --color-slate-300: oklch(44.6% .043 257.281);
+  --color-slate-400: oklch(55.4% .046 257.417);
+  --color-slate-500: oklch(70.4% .04 256.788);
+  --color-slate-600: oklch(86.9% .022 252.894);
+  --color-slate-700: oklch(92.9% .013 255.508);
+
+  --color-amber-50: color-mix(in oklch, var(--color-amber-500) 16%, transparent);
+  --color-amber-100: color-mix(in oklch, var(--color-amber-500) 26%, transparent);
+  --color-amber-700: #fbbf24;
+
+  --color-emerald-50: color-mix(in oklch, var(--color-emerald-500) 16%, transparent);
+  --color-emerald-100: color-mix(in oklch, var(--color-emerald-500) 26%, transparent);
+  --color-emerald-700: #34d399;
+
+  --color-red-50: color-mix(in oklch, var(--color-red-500) 16%, transparent);
+  --color-red-100: color-mix(in oklch, var(--color-red-500) 26%, transparent);
+  --color-red-700: #f87171;
+
+  --color-sky-50: color-mix(in oklch, var(--color-sky-500) 16%, transparent);
+  --color-sky-700: #38bdf8;
+}
+
+:root[data-theme="dark"] * {
+  scrollbar-color: #3a4150 transparent;
+}
+:root[data-theme="dark"] *::-webkit-scrollbar-thumb {
+  background: #3a4150;
 }
 
 @keyframes page-in {

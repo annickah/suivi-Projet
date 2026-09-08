@@ -16,7 +16,7 @@ export function PortalPage() {
 
   return (
     <div className="space-y-6">
-      <div className="animate-page-in flex flex-wrap items-center justify-between gap-5 rounded-lg bg-ink px-6 py-6 text-white shadow-lg shadow-ink/20 sm:px-8">
+      <div className="animate-page-in flex flex-wrap items-center justify-between gap-5 rounded-lg bg-brand px-6 py-6 text-white shadow-lg shadow-brand/20 sm:px-8">
         <div className="flex items-center gap-4">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-white/10 ring-1 ring-white/20">
             <Building2 className="h-5 w-5" aria-hidden="true" />
