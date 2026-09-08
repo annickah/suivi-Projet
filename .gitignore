@@ -9,7 +9,8 @@ lerna-debug.log*
 
 # Node / Dependencies
 node_modules/
-dist/
+dist/*
+!dist/index.html
 dist-ssr/
 *.local
 
