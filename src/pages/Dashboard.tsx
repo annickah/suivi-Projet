@@ -30,7 +30,7 @@ import { NotificationGlyph } from "../components/glyph";
 import { Card, EmptyState, PageHeader, Progress, Reveal, StatusBadge } from "../components/ui";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Tooltip, Legend, Filler);
-ChartJS.defaults.font.family = 'Arial, "Helvetica Neue", Helvetica, "Segoe UI", sans-serif';
+ChartJS.defaults.font.family = '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 
 function getLineOptions(isDark: boolean): ChartOptions<"line"> {
   const p = chartPalette(isDark);
@@ -144,10 +144,10 @@ export function DashboardPage() {
   const avancement = Math.round(projects.reduce((s, p) => s + p.progress, 0) / Math.max(1, projects.length));
 
   const stats = [
-    { label: "Projets actifs", value: actifs, delta: "+2 ce mois-ci", icon: Briefcase },
-    { label: "Projets terminés", value: termines, delta: "1 livré cette semaine", icon: CheckCircle2 },
-    { label: "Clients", value: clients.length, delta: "1 nouveau contrat", icon: Building2 },
-    { label: "Avancement moyen", value: `${avancement}%`, delta: "+4 pts vs mois dernier", icon: TrendingUp },
+    { label: "Projets actifs", value: actifs, delta: "+2 ce mois-ci", icon: Briefcase, color: "text-amber-600 bg-amber-50" },
+    { label: "Projets terminés", value: termines, delta: "1 livré cette semaine", icon: CheckCircle2, color: "text-emerald-600 bg-emerald-50" },
+    { label: "Clients", value: clients.length, delta: "1 nouveau contrat", icon: Building2, color: "text-sky-600 bg-sky-50" },
+    { label: "Avancement moyen", value: `${avancement}%`, delta: "+4 pts vs mois dernier", icon: TrendingUp, color: "text-ink bg-slate-100", progress: avancement },
   ];
 
   const statusKeys = Object.keys(STATUS_META) as ProjectStatus[];
@@ -252,17 +252,29 @@ export function DashboardPage() {
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-[13px] text-gray-500">{s.label}</p>
+                  <p className="text-[13px] font-medium text-gray-500">{s.label}</p>
                   <p className="mt-1.5 text-2xl font-bold tracking-tight text-gray-900 tabular-nums">{s.value}</p>
                 </div>
-                <span className="flex h-9 w-9 items-center justify-center rounded-md bg-slate-100 text-ink transition-transform duration-200 group-hover:-translate-y-0.5">
-                  <s.icon className="h-4 w-4" />
+                <span className={cn("flex h-10 w-10 items-center justify-center rounded-lg transition-transform duration-200 group-hover:-translate-y-0.5", s.color)}>
+                  <s.icon className="h-5 w-5" />
                 </span>
               </div>
-              <p className="mt-3 flex items-center gap-1 text-xs text-emerald-600">
-                <ArrowUpRight className="h-3 w-3" />
-                {s.delta}
-              </p>
+              {s.progress !== undefined ? (
+                <div className="mt-3">
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+                    <div className="h-full rounded-full bg-ink transition-all duration-500" style={{ width: `${s.progress}%` }} />
+                  </div>
+                  <p className="mt-2 flex items-center gap-1 text-xs font-medium text-emerald-600">
+                    <ArrowUpRight className="h-3 w-3" />
+                    {s.delta}
+                  </p>
+                </div>
+              ) : (
+                <p className="mt-3 flex items-center gap-1 text-xs font-medium text-emerald-600">
+                  <ArrowUpRight className="h-3 w-3" />
+                  {s.delta}
+                </p>
+              )}
             </div>
           ))}
         </Card>
@@ -287,8 +299,12 @@ export function DashboardPage() {
               <h2 className="text-sm font-bold text-gray-900">Répartition par statut</h2>
               <span className="text-xs text-gray-500">{projects.length} projets</span>
             </div>
-            <div className="mt-5 h-64 sm:h-72">
+            <div className="relative mt-5 h-64 sm:h-72 flex items-center justify-center">
               <Doughnut data={doughnutData} options={getDoughnutOptions(isDark)} />
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center pb-6">
+                <span className="text-2xl font-bold tracking-tight text-gray-900 tabular-nums">{projects.length}</span>
+                <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Projets</span>
+              </div>
             </div>
           </Card>
         </Reveal>

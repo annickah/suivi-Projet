@@ -1,5 +1,16 @@
 import { useMemo, useState, type FormEvent } from "react";
-import { ArrowUpRight, CalendarDays, FolderPlus, Plus, Search, SearchX, Users } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  ArrowUpRight,
+  CalendarDays,
+  FolderPlus,
+  Plus,
+  Search,
+  SearchX,
+  Users,
+} from "lucide-react";
 import { STATUS_META, formatDate, type ProjectStatus } from "../data";
 import { useApp } from "../store";
 import { cn } from "../utils/cn";
@@ -18,22 +29,43 @@ import {
 } from "../components/ui";
 
 const emptyForm = { name: "", description: "", client: "", status: "en-cours" as ProjectStatus, due: "2026-06-30" };
+type SortField = "name" | "client" | "status" | "progress" | "due";
 
 export function ProjectsPage() {
   const { projects, clients, addProject, openProject } = useApp();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<"tous" | ProjectStatus>("tous");
+  const [sortField, setSortField] = useState<SortField>("due");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
 
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortOrder((o) => (o === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortOrder("asc");
+    }
+  };
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return projects.filter(
+    const list = projects.filter(
       (p) =>
         (status === "tous" || p.status === status) &&
         (q === "" || p.name.toLowerCase().includes(q) || p.client.toLowerCase().includes(q)),
     );
-  }, [projects, query, status]);
+    return list.sort((a, b) => {
+      let cmp = 0;
+      if (sortField === "name") cmp = a.name.localeCompare(b.name);
+      else if (sortField === "client") cmp = a.client.localeCompare(b.client);
+      else if (sortField === "status") cmp = a.status.localeCompare(b.status);
+      else if (sortField === "progress") cmp = a.progress - b.progress;
+      else if (sortField === "due") cmp = Date.parse(a.due) - Date.parse(b.due);
+      return sortOrder === "asc" ? cmp : -cmp;
+    });
+  }, [projects, query, status, sortField, sortOrder]);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -96,15 +128,120 @@ export function ProjectsPage() {
 
       <Reveal delay={90} className="mt-6">
         <Card className="overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Vue Cartes sur mobile */}
+          <div className="divide-y divide-gray-100 sm:hidden">
+            {filtered.map((p) => (
+              <div
+                key={p.id}
+                onClick={() => openProject(p.id)}
+                className="p-4 transition-colors hover:bg-gray-50/70 cursor-pointer space-y-3"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm">{p.name}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{p.client}</p>
+                  </div>
+                  <StatusBadge status={p.status} />
+                </div>
+                <div>
+                  <Progress value={p.progress} />
+                </div>
+                <div className="flex items-center justify-between text-xs text-gray-500 pt-1">
+                  <span className="flex items-center gap-1">
+                    <CalendarDays className="h-3.5 w-3.5 text-gray-400" />
+                    {formatDate(p.due)}
+                  </span>
+                  <span className="flex items-center gap-1 font-medium text-ink">
+                    Voir le projet
+                    <ArrowUpRight className="h-3.5 w-3.5" />
+                  </span>
+                </div>
+              </div>
+            ))}
+            {filtered.length === 0 && (
+              <EmptyState
+                icon={SearchX}
+                title="Aucun projet ne correspond à votre recherche"
+                hint="Essayez un autre nom, un autre client, ou changez le filtre de statut."
+              />
+            )}
+          </div>
+
+          {/* Vue Tableau sur tablette / bureau */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full min-w-[760px] text-left text-sm">
               <thead>
                 <tr className="border-b border-hairline bg-gray-50/80 text-xs font-semibold text-gray-500">
-                  <th className="px-6 py-3 font-semibold">Projet</th>
-                  <th className="px-6 py-3 font-semibold">Client</th>
-                  <th className="px-6 py-3 font-semibold">Statut</th>
-                  <th className="px-6 py-3 font-semibold">Progression</th>
-                  <th className="px-6 py-3 font-semibold">Échéance</th>
+                  <th className="px-6 py-3 font-semibold">
+                    <button
+                      type="button"
+                      onClick={() => handleSort("name")}
+                      className="inline-flex items-center gap-1 hover:text-gray-900 transition-colors"
+                    >
+                      Projet
+                      {sortField === "name" ? (
+                        sortOrder === "asc" ? <ArrowUp className="h-3 w-3 text-ink" /> : <ArrowDown className="h-3 w-3 text-ink" />
+                      ) : (
+                        <ArrowUpDown className="h-3 w-3 opacity-40 hover:opacity-100" />
+                      )}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 font-semibold">
+                    <button
+                      type="button"
+                      onClick={() => handleSort("client")}
+                      className="inline-flex items-center gap-1 hover:text-gray-900 transition-colors"
+                    >
+                      Client
+                      {sortField === "client" ? (
+                        sortOrder === "asc" ? <ArrowUp className="h-3 w-3 text-ink" /> : <ArrowDown className="h-3 w-3 text-ink" />
+                      ) : (
+                        <ArrowUpDown className="h-3 w-3 opacity-40 hover:opacity-100" />
+                      )}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 font-semibold">
+                    <button
+                      type="button"
+                      onClick={() => handleSort("status")}
+                      className="inline-flex items-center gap-1 hover:text-gray-900 transition-colors"
+                    >
+                      Statut
+                      {sortField === "status" ? (
+                        sortOrder === "asc" ? <ArrowUp className="h-3 w-3 text-ink" /> : <ArrowDown className="h-3 w-3 text-ink" />
+                      ) : (
+                        <ArrowUpDown className="h-3 w-3 opacity-40 hover:opacity-100" />
+                      )}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 font-semibold">
+                    <button
+                      type="button"
+                      onClick={() => handleSort("progress")}
+                      className="inline-flex items-center gap-1 hover:text-gray-900 transition-colors"
+                    >
+                      Progression
+                      {sortField === "progress" ? (
+                        sortOrder === "asc" ? <ArrowUp className="h-3 w-3 text-ink" /> : <ArrowDown className="h-3 w-3 text-ink" />
+                      ) : (
+                        <ArrowUpDown className="h-3 w-3 opacity-40 hover:opacity-100" />
+                      )}
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 font-semibold">
+                    <button
+                      type="button"
+                      onClick={() => handleSort("due")}
+                      className="inline-flex items-center gap-1 hover:text-gray-900 transition-colors"
+                    >
+                      Échéance
+                      {sortField === "due" ? (
+                        sortOrder === "asc" ? <ArrowUp className="h-3 w-3 text-ink" /> : <ArrowDown className="h-3 w-3 text-ink" />
+                      ) : (
+                        <ArrowUpDown className="h-3 w-3 opacity-40 hover:opacity-100" />
+                      )}
+                    </button>
+                  </th>
                   <th className="px-6 py-3">
                     <span className="sr-only">Suivi du projet</span>
                   </th>

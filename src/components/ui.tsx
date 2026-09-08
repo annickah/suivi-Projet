@@ -70,7 +70,7 @@ export function Card({ children, className }: { children: ReactNode; className?:
   return (
     <div
       className={cn(
-        "rounded-lg border border-hairline bg-surface shadow-[0_1px_2px_rgba(16,24,40,0.05)]",
+        "rounded-xl border border-hairline bg-surface shadow-[0_1px_3px_rgba(16,24,40,0.05)]",
         className,
       )}
     >
@@ -141,11 +141,11 @@ export function EmptyState({
 }) {
   return (
     <div className={cn("flex flex-col items-center gap-2.5 px-6 py-12 text-center", className)}>
-      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-gray-400">
+      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100/90 text-gray-500 shadow-sm">
         <Icon className="h-5 w-5" aria-hidden="true" />
       </span>
-      <p className="text-[13px] font-medium text-gray-600">{title}</p>
-      {hint ? <p className="max-w-xs text-xs text-gray-400">{hint}</p> : null}
+      <p className="text-[13px] font-semibold text-gray-700">{title}</p>
+      {hint ? <p className="max-w-xs text-xs text-gray-500">{hint}</p> : null}
     </div>
   );
 }
@@ -159,7 +159,7 @@ export function Progress({ value, className }: { value: number; className?: stri
           style={{ width: `${value}%` }}
         />
       </div>
-      <span className="w-9 shrink-0 text-right text-xs tabular-nums text-gray-500">{value}%</span>
+      <span className="w-9 shrink-0 text-right text-xs tabular-nums font-medium text-gray-500">{value}%</span>
     </div>
   );
 }
@@ -183,8 +183,8 @@ export function PrimaryButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "inline-flex items-center gap-2 rounded-md bg-ink px-4 py-2 text-[13px] font-medium text-white",
-        "transition-all duration-200 hover:bg-ink-soft hover:shadow-md active:scale-[0.98]",
+        "inline-flex items-center gap-2 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-white shadow-sm",
+        "transition-all duration-200 hover:bg-ink-soft hover:shadow active:scale-[0.98]",
         disabled && "pointer-events-none opacity-50",
         className,
       )}
@@ -210,8 +210,8 @@ export function GhostButton({
       type={type}
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-2 rounded-md border border-hairline bg-surface px-4 py-2 text-[13px] font-medium text-gray-600",
-        "transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 active:scale-[0.98]",
+        "inline-flex items-center gap-2 rounded-lg border border-hairline bg-surface px-4 py-2 text-[13px] font-medium text-gray-700 shadow-sm",
+        "transition-all duration-200 hover:border-gray-300 hover:bg-gray-50/80 hover:text-gray-900 active:scale-[0.98]",
         className,
       )}
     >
@@ -225,13 +225,13 @@ export function Field({ label, children, hint }: { label: string; children: Reac
     <label className="block">
       <span className="mb-1.5 block text-[13px] font-medium text-gray-700">{label}</span>
       {children}
-      {hint ? <span className="mt-1 block text-xs text-gray-400">{hint}</span> : null}
+      {hint ? <span className="mt-1 block text-xs text-gray-500">{hint}</span> : null}
     </label>
   );
 }
 
 export const inputClass =
-  "w-full rounded-md border border-gray-300 bg-surface px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 transition-shadow duration-200 focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/15";
+  "w-full rounded-lg border border-gray-300 bg-surface px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-200 focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/15 shadow-sm";
 
 export function Modal({
   open,
@@ -270,8 +270,8 @@ export function Modal({
       aria-modal="true"
       aria-label={title}
     >
-      <div className="animate-veil-in absolute inset-0 bg-ink/45" onClick={onClose} />
-      <div className="animate-modal-in relative w-full max-w-lg rounded-lg border border-hairline bg-surface shadow-2xl">
+      <div className="animate-veil-in absolute inset-0 bg-ink/45 backdrop-blur-[2px]" onClick={onClose} />
+      <div className="animate-modal-in relative w-full max-w-lg rounded-xl border border-hairline bg-surface shadow-2xl">
         <div className="flex items-start justify-between gap-4 border-b border-hairline px-6 py-4">
           <div>
             <h2 className="text-base font-bold text-gray-900">{title}</h2>
@@ -281,14 +281,14 @@ export function Modal({
             type="button"
             onClick={onClose}
             aria-label="Fermer la fenêtre"
-            className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
         <div className="px-6 py-5">{children}</div>
         {footer ? (
-          <div className="flex justify-end gap-2 rounded-b-lg border-t border-hairline bg-gray-50/70 px-6 py-4">
+          <div className="flex justify-end gap-2 rounded-b-xl border-t border-hairline bg-gray-50/70 px-6 py-4">
             {footer}
           </div>
         ) : null}

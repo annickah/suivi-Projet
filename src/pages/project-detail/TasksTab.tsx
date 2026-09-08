@@ -1,14 +1,19 @@
 import { useEffect, useState, type FormEvent } from "react";
 import {
+  ArrowLeft,
+  ArrowRight,
   CalendarDays,
   CheckCircle2,
   Clock3,
   Edit2,
   Flag,
+  Kanban,
   Layers,
+  List,
   MessageSquare,
   MessageSquarePlus,
   Plus,
+  RotateCcw,
   Save,
   Tag,
 } from "lucide-react";
@@ -62,6 +67,7 @@ function TaskDetailModal({
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
+    const isDone = draft.status === "termine" ? true : draft.status === "a-faire" || draft.status === "en-cours" ? false : draft.done;
     onSave({
       label: draft.label.trim(),
       phase: draft.phase,
@@ -70,6 +76,8 @@ function TaskDetailModal({
       description: draft.description.trim(),
       priority: draft.priority,
       tags: draft.tags,
+      status: draft.status,
+      done: isDone,
     });
     setEditing(false);
   };
@@ -137,7 +145,7 @@ function TaskDetailModal({
               className={cn(inputClass, "resize-none")}
             />
           </Field>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Phase">
               <select value={draft.phase} onChange={(e) => setDraft({ ...draft, phase: e.target.value })} className={inputClass}>
                 {PHASE_LABELS.map((p) => (
@@ -150,6 +158,20 @@ function TaskDetailModal({
                 {(["basse", "normale", "haute", "critique"] as TaskPriority[]).map((p) => (
                   <option key={p} value={p}>{PRIORITY_META[p].label}</option>
                 ))}
+              </select>
+            </Field>
+            <Field label="Statut">
+              <select
+                value={draft.status ?? (draft.done ? "termine" : "a-faire")}
+                onChange={(e) => {
+                  const val = e.target.value as "a-faire" | "en-cours" | "termine";
+                  setDraft({ ...draft, status: val, done: val === "termine" });
+                }}
+                className={inputClass}
+              >
+                <option value="a-faire">À faire</option>
+                <option value="en-cours">En cours</option>
+                <option value="termine">Terminée</option>
               </select>
             </Field>
           </div>
@@ -313,8 +335,28 @@ function TaskDetailModal({
   );
 }
 
+type KanbanColumnId = "a-faire" | "en-cours" | "termine";
+
+function getTaskStatus(t: Task): KanbanColumnId {
+  if (t.status) return t.status;
+  if (t.done) return "termine";
+  if (t.priority === "haute" || t.priority === "critique") return "en-cours";
+  return "a-faire";
+}
+
+const KANBAN_COLS: {
+  id: KanbanColumnId;
+  label: string;
+  dot: string;
+}[] = [
+  { id: "a-faire", label: "À faire", dot: "bg-slate-400" },
+  { id: "en-cours", label: "En cours", dot: "bg-amber-500" },
+  { id: "termine", label: "Terminées", dot: "bg-emerald-500" },
+];
+
 export function TasksTab({ project, mode }: { project: Project; mode: "admin" | "client" }) {
-  const { tasks, toggleTask, addTask, updateTask, users } = useApp();
+  const { tasks, toggleTask, addTask, updateTask, users, taskComments } = useApp();
+  const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
   const projectTasks = tasks.filter((t) => t.projectId === project.id);
   const [form, setForm] = useState({ label: "", phase: PHASE_LABELS[0], assignee: users[1]?.name ?? "Alice Admin", due: project.due });
   const assigneeListId = `assignee-suggestions-${project.id}`;
@@ -325,6 +367,13 @@ export function TasksTab({ project, mode }: { project: Project; mode: "admin" | 
     if (!form.label.trim()) return;
     addTask(project.id, { ...form, label: form.label.trim(), assignee: form.assignee.trim() });
     setForm({ ...form, label: "" });
+  };
+
+  const moveTask = (t: Task, nextStatus: KanbanColumnId) => {
+    updateTask(t.id, {
+      status: nextStatus,
+      done: nextStatus === "termine",
+    });
   };
 
   const done = projectTasks.filter((t) => t.done).length;
@@ -386,80 +435,244 @@ export function TasksTab({ project, mode }: { project: Project; mode: "admin" | 
       )}
 
       <Card className="overflow-hidden">
-        <div className="flex items-center justify-between border-b border-hairline px-6 py-4">
-          <h2 className="text-sm font-bold text-gray-900">Tâches du projet</h2>
-          <span className="text-xs text-gray-500">
-            {done}/{projectTasks.length} terminées
-          </span>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-hairline px-6 py-4">
+          <div>
+            <h2 className="text-sm font-bold text-gray-900">Tâches du projet</h2>
+            <p className="mt-0.5 text-xs text-gray-500">
+              {done}/{projectTasks.length} terminées
+            </p>
+          </div>
+          <div className="flex items-center gap-1 rounded-lg border border-hairline bg-slate-100/80 p-1">
+            <button
+              type="button"
+              onClick={() => setViewMode("list")}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-150",
+                viewMode === "list"
+                  ? "bg-surface text-gray-900 shadow-sm"
+                  : "text-gray-500 hover:text-gray-900",
+              )}
+            >
+              <List className="h-3.5 w-3.5" />
+              Liste
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("kanban")}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-150",
+                viewMode === "kanban"
+                  ? "bg-surface text-gray-900 shadow-sm"
+                  : "text-gray-500 hover:text-gray-900",
+              )}
+            >
+              <Kanban className="h-3.5 w-3.5" />
+              Kanban
+            </button>
+          </div>
         </div>
-        <div className="divide-y divide-gray-100">
-          {PHASE_LABELS.map((phase) => {
-            const rows = projectTasks.filter((t) => t.phase === phase);
-            if (rows.length === 0) return null;
-            return (
-              <div key={phase}>
-                <div className="bg-gray-50/80 px-6 py-2 text-[11px] font-semibold tracking-wide text-gray-400 uppercase">
-                  {phase}
-                </div>
-                <ul className="divide-y divide-gray-100">
-                  {rows.map((t) => {
-                    const late = !t.done && t.due < today;
-                    return (
-                      <li
-                        key={t.id}
-                        onClick={() => setOpenTask(t)}
-                        className="flex cursor-pointer items-center gap-3 px-6 py-3 transition-colors duration-150 hover:bg-gray-50/70"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={t.done}
-                          disabled={mode === "client"}
-                          onChange={(e) => {
-                            e.stopPropagation();
-                            toggleTask(t.id);
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                          aria-label={`Tâche : ${t.label}`}
-                          className="h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 accent-ink disabled:cursor-not-allowed"
-                        />
-                        <span className={cn("min-w-0 flex-1 text-[13px]", t.done ? "text-gray-400 line-through" : "text-gray-800")}>
-                          {t.label}
-                        </span>
-                        {t.priority && (t.priority === "haute" || t.priority === "critique") && (
+
+        {viewMode === "list" ? (
+          <div className="divide-y divide-gray-100">
+            {PHASE_LABELS.map((phase) => {
+              const rows = projectTasks.filter((t) => t.phase === phase);
+              if (rows.length === 0) return null;
+              return (
+                <div key={phase}>
+                  <div className="bg-gray-50/80 px-6 py-2 text-[11px] font-semibold tracking-wide text-gray-400 uppercase">
+                    {phase}
+                  </div>
+                  <ul className="divide-y divide-gray-100">
+                    {rows.map((t) => {
+                      const late = !t.done && t.due < today;
+                      return (
+                        <li
+                          key={t.id}
+                          onClick={() => setOpenTask(t)}
+                          className="flex cursor-pointer items-center gap-3 px-6 py-3 transition-colors duration-150 hover:bg-gray-50/70"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={t.done}
+                            disabled={mode === "client"}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              toggleTask(t.id);
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            aria-label={`Tâche : ${t.label}`}
+                            className="h-4 w-4 shrink-0 cursor-pointer rounded border-gray-300 accent-ink disabled:cursor-not-allowed"
+                          />
+                          <span className={cn("min-w-0 flex-1 text-[13px]", t.done ? "text-gray-400 line-through" : "text-gray-800")}>
+                            {t.label}
+                          </span>
+                          {t.priority && (t.priority === "haute" || t.priority === "critique") && (
+                            <span
+                              className={cn(
+                                "hidden h-1.5 w-1.5 shrink-0 rounded-full sm:inline-block",
+                                t.priority === "critique" ? "bg-red-500" : "bg-amber-500",
+                              )}
+                              aria-hidden="true"
+                              title={`Priorité ${PRIORITY_META[t.priority].label}`}
+                            />
+                          )}
+                          <span className="hidden items-center gap-1.5 sm:flex">
+                            <Avatar name={t.assignee} size="sm" />
+                            <span className="text-xs text-gray-500">{t.assignee}</span>
+                          </span>
                           <span
                             className={cn(
-                              "hidden h-1.5 w-1.5 shrink-0 rounded-full sm:inline-block",
-                              t.priority === "critique" ? "bg-red-500" : "bg-amber-500",
+                              "flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium",
+                              t.done
+                                ? "bg-emerald-50 text-emerald-700"
+                                : late
+                                  ? "bg-red-50 text-red-600"
+                                  : "bg-slate-100 text-gray-500",
                             )}
-                            aria-hidden="true"
-                            title={`Priorité ${PRIORITY_META[t.priority].label}`}
-                          />
-                        )}
-                        <span className="hidden items-center gap-1.5 sm:flex">
-                          <Avatar name={t.assignee} size="sm" />
-                          <span className="text-xs text-gray-500">{t.assignee}</span>
-                        </span>
-                        <span
-                          className={cn(
-                            "flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium",
-                            t.done
-                              ? "bg-emerald-50 text-emerald-700"
-                              : late
-                                ? "bg-red-50 text-red-600"
-                                : "bg-slate-100 text-gray-500",
-                          )}
+                          >
+                            <CalendarDays className="h-3 w-3" />
+                            {t.done ? "Fait" : late ? `Retard · ${fmtDay(t.due)}` : fmtDay(t.due)}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="grid gap-4 p-4 lg:grid-cols-3 bg-gray-50/40">
+            {KANBAN_COLS.map((col) => {
+              const colTasks = projectTasks.filter((t) => getTaskStatus(t) === col.id);
+              return (
+                <div key={col.id} className="flex flex-col rounded-lg border border-hairline bg-surface/80 p-3 shadow-xs">
+                  <div className="flex items-center justify-between pb-3 border-b border-hairline/60">
+                    <div className="flex items-center gap-2">
+                      <span className={cn("h-2 w-2 rounded-full", col.dot)} />
+                      <span className="text-xs font-bold text-gray-900">{col.label}</span>
+                    </div>
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-gray-600">
+                      {colTasks.length}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 space-y-2.5 flex-1 overflow-y-auto max-h-[540px] pr-0.5">
+                    {colTasks.map((t) => {
+                      const late = !t.done && t.due < today;
+                      const commentCount = taskComments.filter((c) => c.taskId === t.id).length;
+                      return (
+                        <div
+                          key={t.id}
+                          onClick={() => setOpenTask(t)}
+                          className="group rounded-lg border border-hairline bg-surface p-3 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md cursor-pointer"
                         >
-                          <CalendarDays className="h-3 w-3" />
-                          {t.done ? "Fait" : late ? `Retard · ${fmtDay(t.due)}` : fmtDay(t.due)}
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            );
-          })}
-        </div>
+                          <div className="flex items-center justify-between gap-1.5">
+                            <span className="truncate rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
+                              {t.phase}
+                            </span>
+                            {t.priority && (
+                              <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium", PRIORITY_META[t.priority].cls)}>
+                                <span className={cn("h-1.5 w-1.5 rounded-full", t.priority === "critique" ? "bg-red-500" : t.priority === "haute" ? "bg-amber-500" : "bg-sky-500")} />
+                                {PRIORITY_META[t.priority].label}
+                              </span>
+                            )}
+                          </div>
+
+                          <p className={cn("mt-2 text-[13px] font-medium leading-snug", t.done ? "text-gray-400 line-through" : "text-gray-900")}>
+                            {t.label}
+                          </p>
+
+                          <div className="mt-3 flex items-center justify-between gap-2 border-t border-hairline/60 pt-2 text-xs">
+                            <span className="flex items-center gap-1.5 text-gray-600 truncate">
+                              <Avatar name={t.assignee} size="sm" />
+                              <span className="truncate max-w-[85px] text-[11px]">{t.assignee}</span>
+                            </span>
+                            <div className="flex items-center gap-2">
+                              {commentCount > 0 && (
+                                <span className="flex items-center gap-1 text-[11px] text-gray-500">
+                                  <MessageSquare className="h-3 w-3" />
+                                  {commentCount}
+                                </span>
+                              )}
+                              <span
+                                className={cn(
+                                  "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium",
+                                  t.done
+                                    ? "bg-emerald-50 text-emerald-700"
+                                    : late
+                                      ? "bg-red-50 text-red-600"
+                                      : "bg-slate-100 text-gray-500",
+                                )}
+                              >
+                                <CalendarDays className="h-2.5 w-2.5" />
+                                {fmtDay(t.due)}
+                              </span>
+                            </div>
+                          </div>
+
+                          {mode === "admin" && (
+                            <div
+                              className="mt-2.5 flex items-center justify-between border-t border-hairline/50 pt-2 text-xs"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {col.id === "a-faire" && (
+                                <button
+                                  type="button"
+                                  onClick={() => moveTask(t, "en-cours")}
+                                  className="ml-auto inline-flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium text-amber-700 hover:bg-amber-50 transition-colors"
+                                >
+                                  En cours
+                                  <ArrowRight className="h-3 w-3" />
+                                </button>
+                              )}
+                              {col.id === "en-cours" && (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => moveTask(t, "a-faire")}
+                                    className="inline-flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+                                  >
+                                    <ArrowLeft className="h-3 w-3" />
+                                    À faire
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => moveTask(t, "termine")}
+                                    className="inline-flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium text-emerald-700 hover:bg-emerald-50 transition-colors"
+                                  >
+                                    Terminer
+                                    <CheckCircle2 className="h-3 w-3" />
+                                  </button>
+                                </>
+                              )}
+                              {col.id === "termine" && (
+                                <button
+                                  type="button"
+                                  onClick={() => moveTask(t, "en-cours")}
+                                  className="inline-flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+                                >
+                                  <RotateCcw className="h-3 w-3" />
+                                  Rouvrir
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+
+                    {colTasks.length === 0 && (
+                      <div className="py-8 text-center text-xs text-gray-400">
+                        Aucune tâche dans cette colonne
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </Card>
 
       {openTask && (

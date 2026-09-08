@@ -343,13 +343,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const updateTask = useCallback(
     (id: number, patch: Partial<Omit<Task, "id" | "projectId">>) => {
       let projectId: number | null = null;
-      setTasks((list) =>
-        list.map((t) => {
+      setTasks((list) => {
+        const next = list.map((t) => {
           if (t.id !== id) return t;
           projectId = t.projectId;
           return { ...t, ...patch };
-        }),
-      );
+        });
+        if (projectId !== null && patch.done !== undefined) {
+          const pid = projectId;
+          const newProgress = computeProgress(pid, next);
+          setProjects((prev) => {
+            const project = prev.find((p) => p.id === pid);
+            if (!project || project.progress === newProgress) return prev;
+            pushEvent(pid, "progression", `Progression recalculée à partir des tâches : ${project.progress} % → ${newProgress} %.`);
+            return prev.map((p) => (p.id === pid ? { ...p, progress: newProgress } : p));
+          });
+        }
+        return next;
+      });
       if (projectId !== null) {
         const pid = projectId;
         pushEvent(pid, "tache", `Tâche mise à jour : « ${patch.label ?? "(mise à jour)"} ».`);

@@ -1,11 +1,80 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Bell, CheckCheck, LogOut, Menu } from "lucide-react";
-import { timeAgo } from "../data";
+import { ArrowRight, Bell, CheckCheck, ChevronRight, Home, LogOut, Menu } from "lucide-react";
+import { ROUTES, timeAgo } from "../data";
 import { useApp, useNow } from "../store";
 import { cn } from "../utils/cn";
 import { NotificationGlyph } from "./glyph";
 import { ThemeMenu } from "./ThemeMenu";
-import { GhostButton, Modal, PrimaryButton } from "./ui";
+import { Avatar, GhostButton, Modal, PrimaryButton } from "./ui";
+
+function Breadcrumbs() {
+  const { route, projectView, portal, projects, clients, closeProject, closePortal, navigate } = useApp();
+
+  if (portal) {
+    const client = clients.find((c) => c.id === portal.clientId);
+    const clientProjects = projects.filter((p) => p.client === client?.name);
+    const proj = clientProjects.find((p) => p.id === portal.projectId) ?? clientProjects[0];
+
+    return (
+      <nav className="flex items-center gap-1.5 text-xs text-gray-500 min-w-0" aria-label="Fil d'Ariane">
+        <button
+          type="button"
+          onClick={closePortal}
+          className="truncate font-medium transition-colors hover:text-ink hover:underline"
+        >
+          Espace Client
+        </button>
+        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+        <span className="truncate text-gray-600 font-medium">{client?.name ?? "Client"}</span>
+        {proj && (
+          <>
+            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+            <span className="truncate text-gray-900 font-semibold">{proj.name}</span>
+          </>
+        )}
+      </nav>
+    );
+  }
+
+  if (projectView) {
+    const proj = projects.find((p) => p.id === projectView);
+    return (
+      <nav className="flex items-center gap-1.5 text-xs text-gray-500 min-w-0" aria-label="Fil d'Ariane">
+        <button
+          type="button"
+          onClick={closeProject}
+          className="flex items-center gap-1 font-medium transition-colors hover:text-ink hover:underline"
+        >
+          <span>Projets</span>
+        </button>
+        {proj && (
+          <>
+            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+            <span className="truncate text-gray-500">{proj.client}</span>
+            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+            <span className="truncate text-gray-900 font-semibold">{proj.name}</span>
+          </>
+        )}
+      </nav>
+    );
+  }
+
+  const currentRouteMeta = ROUTES.find((r) => r.id === route);
+  return (
+    <nav className="flex items-center gap-1.5 text-xs text-gray-500 min-w-0" aria-label="Fil d'Ariane">
+      <button
+        type="button"
+        onClick={() => navigate("tableau-de-bord")}
+        className="flex items-center gap-1 font-medium transition-colors hover:text-ink hover:underline"
+      >
+        <Home className="h-3.5 w-3.5 text-gray-400" />
+        <span className="hidden sm:inline">Accueil</span>
+      </button>
+      <ChevronRight className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+      <span className="truncate font-semibold text-gray-900">{currentRouteMeta?.label ?? "Page"}</span>
+    </nav>
+  );
+}
 
 function BellMenu() {
   const { notifications, unreadCount, markAllRead, markRead, navigate } = useApp();
@@ -126,31 +195,39 @@ export function Topbar() {
 
   return (
     <header className="sticky top-0 z-30 border-b border-hairline bg-surface">
-      <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
-        <button
-          type="button"
-          onClick={() => setMenuOpen(true)}
-          className="rounded-md p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 lg:hidden"
-          aria-label="Ouvrir le menu"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
-        <span className="text-base font-bold tracking-tight text-gray-900 lg:hidden">Suivi Projets</span>
+      <div className="flex h-16 items-center justify-between gap-4 px-4 sm:px-6">
+        <div className="flex items-center gap-3 min-w-0">
+          <button
+            type="button"
+            onClick={() => setMenuOpen(true)}
+            className="rounded-md p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 lg:hidden"
+            aria-label="Ouvrir le menu"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          <span className="text-base font-bold tracking-tight text-gray-900 lg:hidden shrink-0">Suivi Projets</span>
+          <div className="hidden sm:block min-w-0">
+            <Breadcrumbs />
+          </div>
+        </div>
 
-        <div className="ml-auto flex items-center gap-3 sm:gap-5">
+        <div className="flex items-center gap-3 sm:gap-4 shrink-0">
           <div className="flex items-center gap-1">
             <ThemeMenu />
             <BellMenu />
           </div>
-          <span className="hidden h-8 w-px bg-gray-200 sm:block" aria-hidden="true" />
-          <div className="hidden leading-tight sm:block">
-            <p className="text-[13px] font-semibold text-gray-900">Alice Admin</p>
-            <p className="text-xs text-gray-500">Administrateur</p>
+          <span className="hidden h-6 w-px bg-gray-200 sm:block" aria-hidden="true" />
+          <div className="hidden items-center gap-2.5 sm:flex">
+            <Avatar name="Alice Admin" size="sm" />
+            <div className="leading-tight text-left">
+              <p className="text-[13px] font-semibold text-gray-900">Alice Admin</p>
+              <p className="text-[11px] text-gray-500">Administrateur</p>
+            </div>
           </div>
           <button
             type="button"
             onClick={() => setConfirmOpen(true)}
-            className="text-[13px] text-gray-600 transition-colors duration-200 hover:text-gray-900 hover:underline"
+            className="text-xs font-medium text-gray-500 transition-colors duration-200 hover:text-red-600 hover:underline"
           >
             Déconnexion
           </button>

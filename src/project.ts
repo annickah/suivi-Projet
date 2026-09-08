@@ -28,6 +28,7 @@ export interface Task {
   description: string;
   priority: TaskPriority;
   tags: string[];
+  status?: "a-faire" | "en-cours" | "termine";
 }
 
 export type ValidationStatus = "validee" | "en-attente" | "a-venir" | "refusee";

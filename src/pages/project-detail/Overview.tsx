@@ -19,6 +19,7 @@ import { chartPalette, useIsDarkMode } from "../../utils/theme";
 import { Card, StatusBadge } from "../../components/ui";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
+ChartJS.defaults.font.family = '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 
 function getChartOptions(isDark: boolean): ChartOptions<"line"> {
   const p = chartPalette(isDark);
@@ -206,7 +207,7 @@ export function GanttChart({ project }: { project: Project }) {
       <div className="mt-5 overflow-x-auto">
         <div className="min-w-[560px]">
           <div className="flex">
-            <div className="w-32 shrink-0 sm:w-40" />
+            <div className="sticky left-0 z-10 w-32 shrink-0 bg-surface pr-3 sm:w-44" />
             <div className="relative h-5 flex-1">
               {months.map((t, i) => (
                 <span key={i} className="absolute top-0 text-[10px] font-medium text-gray-400" style={{ left: `${t.p}%` }}>
@@ -219,7 +220,7 @@ export function GanttChart({ project }: { project: Project }) {
           <div className="divide-y divide-gray-100">
             {phases.map((ph) => (
               <div key={ph.label} className="flex items-center py-2.5">
-                <div className="w-32 shrink-0 pr-3 sm:w-40">
+                <div className="sticky left-0 z-10 w-32 shrink-0 bg-surface pr-3 sm:w-44 shadow-[4px_0_6px_-3px_rgba(0,0,0,0.06)]">
                   <p className="truncate text-[13px] font-medium text-gray-700">{ph.label}</p>
                   <p className="text-[11px] text-gray-400">
                     {fmtDay(ph.start)} → {fmtDay(ph.end)}
