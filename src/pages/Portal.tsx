@@ -2,7 +2,7 @@ import { Building2, Info, Lock, X } from "lucide-react";
 import { useApp } from "../store";
 import { cn } from "../utils/cn";
 import { Card } from "../components/ui";
-import { ProjectWorkspace } from "./ProjectDetail";
+import { ProjectWorkspace } from "./project-detail/ProjectWorkspace";
 
 export function PortalPage() {
   const { portal, openPortal, closePortal, clients, projects } = useApp();
