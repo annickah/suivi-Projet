@@ -36,7 +36,7 @@ export function PortalPage() {
         <button
           type="button"
           onClick={closePortal}
-          className="inline-flex items-center gap-2 rounded-md bg-white px-4 py-2 text-[13px] font-medium text-ink transition-all duration-200 hover:bg-slate-100 hover:shadow-md active:scale-[0.98]"
+          className="inline-flex items-center gap-2 rounded-md bg-surface px-4 py-2 text-[13px] font-medium text-ink transition-all duration-200 hover:bg-slate-100 hover:shadow-md active:scale-[0.98]"
         >
           <X className="h-3.5 w-3.5" />
           Quitter l'espace client
@@ -58,7 +58,7 @@ export function PortalPage() {
                   "rounded-full border px-4 py-2 text-[13px] font-medium transition-all duration-200 active:scale-[0.98]",
                   active
                     ? "border-ink bg-ink text-white shadow-sm shadow-ink/25"
-                    : "border-hairline bg-white text-gray-600 hover:border-gray-300 hover:text-gray-900",
+                    : "border-hairline bg-surface text-gray-600 hover:border-gray-300 hover:text-gray-900",
                 )}
               >
                 {p.name}
