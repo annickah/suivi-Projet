@@ -4,6 +4,7 @@ import {
   FileText,
   Flag,
   FolderPlus,
+  History,
   Layers,
   ListChecks,
   MessageSquare,
@@ -23,7 +24,7 @@ import {
 } from "../../history";
 import { useApp } from "../../store";
 import { cn } from "../../utils/cn";
-import { Card, GhostButton } from "../../components/ui";
+import { Card, EmptyState, GhostButton } from "../../components/ui";
 
 const EVENT_ICONS: Record<ProjectEventType, LucideIcon> = {
   creation: FolderPlus,
@@ -74,14 +75,21 @@ export function HistoryTimeline({ project, events }: { project: Project; events:
           Exporter (CSV)
         </GhostButton>
       </div>
-      <ol className="relative px-6 py-6 before:absolute before:top-10 before:bottom-10 before:left-[39px] before:w-px before:bg-gray-200">
+      <ol
+        className={cn(
+          "relative",
+          sorted.length > 0
+            ? "px-6 py-6 before:absolute before:top-10 before:bottom-10 before:left-[39px] before:w-px before:bg-gray-200"
+            : undefined,
+        )}
+      >
         {sorted.map((e) => {
           const Icon = EVENT_ICONS[e.type];
           return (
             <li key={e.id} className="relative flex gap-4 pb-6 last:pb-0">
               <span
                 className={cn(
-                  "z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-4 ring-white",
+                  "z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-4 ring-surface",
                   e.type === "creation" ? "bg-ink text-white" : "bg-slate-100 text-gray-600",
                 )}
               >
@@ -101,7 +109,11 @@ export function HistoryTimeline({ project, events }: { project: Project; events:
             </li>
           );
         })}
-        {sorted.length === 0 && <li className="px-1 py-4 text-sm text-gray-500">Aucune modification enregistrée pour le moment.</li>}
+        {sorted.length === 0 && (
+          <li>
+            <EmptyState icon={History} title="Aucune modification enregistrée pour le moment" />
+          </li>
+        )}
       </ol>
     </Card>
   );
