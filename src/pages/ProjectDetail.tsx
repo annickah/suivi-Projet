@@ -111,7 +111,7 @@ export function ProjectDetailPage() {
               <select
                 value={status}
                 onChange={(e) => setDraftStatus(e.target.value as Project["status"])}
-                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition-shadow focus:border-ink focus:ring-2 focus:ring-ink/15 focus:outline-none lg:w-44"
+                className="w-full rounded-md border border-gray-300 bg-surface px-3 py-2 text-sm text-gray-900 transition-shadow focus:border-ink focus:ring-2 focus:ring-ink/15 focus:outline-none lg:w-44"
               >
                 {(Object.keys(STATUS_META) as Project["status"][]).map((k) => (
                   <option key={k} value={k}>
