@@ -1,10 +1,11 @@
 import { useMemo, useState, type FormEvent } from "react";
-import { ArrowUpRight, CalendarDays, FolderPlus, Plus, Search, Users } from "lucide-react";
+import { ArrowUpRight, CalendarDays, FolderPlus, Plus, Search, SearchX, Users } from "lucide-react";
 import { STATUS_META, formatDate, type ProjectStatus } from "../data";
 import { useApp } from "../store";
 import { cn } from "../utils/cn";
 import {
   Card,
+  EmptyState,
   Field,
   GhostButton,
   Modal,
@@ -151,8 +152,12 @@ export function ProjectsPage() {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-500">
-                      Aucun projet ne correspond à votre recherche.
+                    <td colSpan={6}>
+                      <EmptyState
+                        icon={SearchX}
+                        title="Aucun projet ne correspond à votre recherche"
+                        hint="Essayez un autre nom, un autre client, ou changez le filtre de statut."
+                      />
                     </td>
                   </tr>
                 )}
