@@ -16,7 +16,7 @@ export function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-canvas px-4 py-10">
       <div className="animate-page-in w-full max-w-md">
-        <div className="rounded-lg border border-hairline bg-white p-8 shadow-[0_1px_2px_rgba(16,24,40,0.05),0_16px_40px_-24px_rgba(15,23,42,0.25)]">
+        <div className="rounded-lg border border-hairline bg-surface p-8 shadow-[0_1px_2px_rgba(16,24,40,0.05),0_16px_40px_-24px_rgba(15,23,42,0.25)]">
           <div className="flex items-center gap-3">
             <span className="flex h-9 w-9 items-center justify-center rounded-md bg-ink text-sm font-bold text-white">SP</span>
             <span className="text-base font-bold tracking-tight text-gray-900">Suivi Projets</span>
