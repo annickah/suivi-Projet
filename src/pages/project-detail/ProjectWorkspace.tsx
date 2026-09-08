@@ -107,7 +107,7 @@ export function ProjectWorkspace({ project, mode }: { project: Project; mode: "a
                   key={s.tab}
                   type="button"
                   onClick={() => setTab(s.tab)}
-                  className="group rounded-lg border border-hairline bg-white p-4 text-left shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md"
+                  className="group rounded-lg border border-hairline bg-surface p-4 text-left shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md"
                 >
                   <span className="flex items-center justify-between">
                     <s.icon className="h-4 w-4 text-gray-400 transition-colors group-hover:text-ink" aria-hidden="true" />
