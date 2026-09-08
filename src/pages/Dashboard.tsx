@@ -12,7 +12,7 @@ import {
   type ChartOptions,
 } from "chart.js";
 import { Line, Doughnut } from "react-chartjs-2";
-import { ArrowUpRight, AlertTriangle, Briefcase, Building2, CalendarClock, CheckCircle2, ClipboardList, ListChecks, ShieldCheck, TrendingUp, XCircle, type LucideIcon } from "lucide-react";
+import { ArrowUpRight, AlertTriangle, Briefcase, Building2, CalendarClock, CheckCircle2, ClipboardList, ListChecks, SearchX, ShieldCheck, TrendingUp, XCircle, type LucideIcon } from "lucide-react";
 import {
   ACTIVITY,
   CREATED_PER_MONTH,
@@ -25,55 +25,61 @@ import {
 } from "../data";
 import { useApp } from "../store";
 import { cn } from "../utils/cn";
+import { chartPalette, useIsDarkMode } from "../utils/theme";
 import { NotificationGlyph } from "../components/glyph";
-import { Card, PageHeader, Progress, Reveal, StatusBadge } from "../components/ui";
+import { Card, EmptyState, PageHeader, Progress, Reveal, StatusBadge } from "../components/ui";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Tooltip, Legend, Filler);
 ChartJS.defaults.font.family = 'Arial, "Helvetica Neue", Helvetica, "Segoe UI", sans-serif';
-ChartJS.defaults.color = "#6b7280";
 
-const lineOptions: ChartOptions<"line"> = {
-  responsive: true,
-  maintainAspectRatio: false,
-  interaction: { mode: "index", intersect: false },
-  plugins: {
-    legend: {
-      position: "bottom",
-      align: "end",
-      labels: { usePointStyle: true, pointStyle: "circle", boxWidth: 6, boxHeight: 6, padding: 16, font: { size: 11 } },
+function getLineOptions(isDark: boolean): ChartOptions<"line"> {
+  const p = chartPalette(isDark);
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: "index", intersect: false },
+    plugins: {
+      legend: {
+        position: "bottom",
+        align: "end",
+        labels: { usePointStyle: true, pointStyle: "circle", boxWidth: 6, boxHeight: 6, padding: 16, font: { size: 11 }, color: p.tick },
+      },
+      tooltip: {
+        backgroundColor: p.tooltipBg,
+        padding: 10,
+        cornerRadius: 6,
+        displayColors: false,
+        titleFont: { size: 12 },
+        bodyFont: { size: 12 },
+      },
     },
-    tooltip: {
-      backgroundColor: "#0f172a",
-      padding: 10,
-      cornerRadius: 6,
-      displayColors: false,
-      titleFont: { size: 12 },
-      bodyFont: { size: 12 },
+    scales: {
+      x: { grid: { display: false }, border: { color: p.axisLine }, ticks: { color: p.tick, font: { size: 11 } } },
+      y: {
+        beginAtZero: true,
+        grid: { color: p.grid },
+        border: { display: false },
+        ticks: { color: p.tick, font: { size: 11 }, precision: 0 },
+      },
     },
-  },
-  scales: {
-    x: { grid: { display: false }, border: { color: "#e5e7eb" }, ticks: { color: "#9ca3af", font: { size: 11 } } },
-    y: {
-      beginAtZero: true,
-      grid: { color: "#eef0f3" },
-      border: { display: false },
-      ticks: { color: "#9ca3af", font: { size: 11 }, precision: 0 },
-    },
-  },
-};
+  };
+}
 
-const doughnutOptions: ChartOptions<"doughnut"> = {
-  responsive: true,
-  maintainAspectRatio: false,
-  cutout: "68%",
-  plugins: {
-    legend: {
-      position: "bottom",
-      labels: { usePointStyle: true, pointStyle: "circle", boxWidth: 6, boxHeight: 6, padding: 14, font: { size: 11 } },
+function getDoughnutOptions(isDark: boolean): ChartOptions<"doughnut"> {
+  const p = chartPalette(isDark);
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: "68%",
+    plugins: {
+      legend: {
+        position: "bottom",
+        labels: { usePointStyle: true, pointStyle: "circle", boxWidth: 6, boxHeight: 6, padding: 14, font: { size: 11 }, color: p.tick },
+      },
+      tooltip: { backgroundColor: p.tooltipBg, padding: 10, cornerRadius: 6, titleFont: { size: 12 }, bodyFont: { size: 12 } },
     },
-    tooltip: { backgroundColor: "#0f172a", padding: 10, cornerRadius: 6, titleFont: { size: 12 }, bodyFont: { size: 12 } },
-  },
-};
+  };
+}
 
 type FilterId = "tous" | "en-cours" | "projets-retard" | "taches-a-faire" | "taches-retard" | "taches-bloquees" | "validations-attente";
 
@@ -90,6 +96,8 @@ const FILTER_DEFS: { id: FilterId; label: string; icon: LucideIcon; dot: string 
 export function DashboardPage() {
   const { projects, clients, tasks, validations, navigate, openProject } = useApp();
   const [filter, setFilter] = useState<FilterId>("tous");
+  const isDark = useIsDarkMode();
+  const chartAccent = isDark ? "#8fb0dd" : "#0f172a";
 
   const today = todayISO();
   const dayMs = 1000 * 60 * 60 * 24;
@@ -151,14 +159,14 @@ export function DashboardPage() {
       {
         label: "Projets créés",
         data: CREATED_PER_MONTH,
-        borderColor: "#0f172a",
-        backgroundColor: "rgba(15,23,42,0.06)",
+        borderColor: chartAccent,
+        backgroundColor: isDark ? "rgba(143,176,221,0.12)" : "rgba(15,23,42,0.06)",
         fill: true,
         tension: 0.35,
         borderWidth: 2,
         pointRadius: 0,
         pointHoverRadius: 4,
-        pointBackgroundColor: "#0f172a",
+        pointBackgroundColor: chartAccent,
       },
       {
         label: "Projets livrés",
@@ -182,7 +190,7 @@ export function DashboardPage() {
       {
         data: statusCounts,
         backgroundColor: statusKeys.map((k) => STATUS_META[k].chart),
-        borderColor: "#ffffff",
+        borderColor: isDark ? "#14171f" : "#ffffff",
         borderWidth: 2,
         hoverOffset: 6,
       },
@@ -210,7 +218,7 @@ export function DashboardPage() {
                   "inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-all duration-200 active:scale-[0.98]",
                   active
                     ? "border-ink bg-ink text-white shadow-sm shadow-ink/25"
-                    : "border-hairline bg-white text-gray-600 hover:border-gray-300 hover:text-gray-900",
+                    : "border-hairline bg-surface text-gray-600 hover:border-gray-300 hover:text-gray-900",
                 )}
               >
                 <Icon className="h-3.5 w-3.5" aria-hidden="true" />
@@ -268,7 +276,7 @@ export function DashboardPage() {
               <span className="text-xs text-gray-500">12 derniers mois</span>
             </div>
             <div className="mt-5 h-64 sm:h-72">
-              <Line data={lineData} options={lineOptions} />
+              <Line data={lineData} options={getLineOptions(isDark)} />
             </div>
           </Card>
         </Reveal>
@@ -280,7 +288,7 @@ export function DashboardPage() {
               <span className="text-xs text-gray-500">{projects.length} projets</span>
             </div>
             <div className="mt-5 h-64 sm:h-72">
-              <Doughnut data={doughnutData} options={doughnutOptions} />
+              <Doughnut data={doughnutData} options={getDoughnutOptions(isDark)} />
             </div>
           </Card>
         </Reveal>
@@ -329,9 +337,7 @@ export function DashboardPage() {
               </table>
             </div>
             {filteredProjects.length === 0 && (
-              <p className="px-6 py-10 text-center text-sm text-gray-500">
-                Aucun projet ne correspond à ce statut.
-              </p>
+              <EmptyState icon={SearchX} title="Aucun projet ne correspond à ce filtre" />
             )}
           </Card>
         </Reveal>
