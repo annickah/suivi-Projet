@@ -228,19 +228,23 @@ const COMMENT_SEED: { taskOffset: number; projectId: number; author: string; tex
 ];
 
 export const seedTaskComments: TaskComment[] = [];
-for (const c of COMMENT_SEED) {
-  const id = 8000 + c.taskOffset * 100 + c.projectId;
+COMMENT_SEED.forEach((c, i) => {
   const date = new Date();
   date.setDate(date.getDate() - c.daysAgo);
   const taskId = 9000 + c.projectId * 10 + c.taskOffset;
   seedTaskComments.push({
-    id: id + 1,
+    // Index-based : deux commentaires peuvent partager le même
+    // (taskOffset, projectId) quand plusieurs personnes commentent la même
+    // tâche — la formule précédente (8000 + taskOffset*100 + projectId)
+    // produisait alors le même id pour les deux (ex. les deux premiers
+    // commentaires du projet 1), causant des clés React dupliquées.
+    id: 8001 + i,
     taskId,
     author: c.author,
     text: c.text,
     at: date.toISOString(),
   });
-}
+});
 
 export const PHASE_LABELS = ["Cadrage", "Design", "Développement", "Recette", "Mise en ligne"];
 
