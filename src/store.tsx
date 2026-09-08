@@ -420,6 +420,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const decideRequest = useCallback(
     (id: number, decision: Exclude<RequestStatus, "en-attente">) => {
+      // Règle §7.4 du cahier des charges : une demande de modification ne doit
+      // jamais modifier automatiquement le périmètre, même une fois acceptée.
+      // Étendre le périmètre reste une action explicite et distincte, via
+      // updatePerimeter / addScope depuis l'onglet Périmètre.
       setRequests((list) =>
         list.map((r) => {
           if (r.id !== id) return r;
@@ -428,14 +432,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
             "demande",
             `Demande « ${r.title} » ${decision === "acceptee" ? "acceptée" : "refusée"} par Alice Admin.`,
           );
-          if (decision === "acceptee") {
-            setScope((s) => [...s, { id: nextId(), projectId: r.projectId, label: `${r.title} (demande client acceptée)`, status: "ajoute" }]);
-            pushEvent(r.projectId, "perimetre", `Périmètre étendu : « ${r.title} ».`);
-          }
           addNotification(
             "projet",
             decision === "acceptee" ? "Demande acceptée" : "Demande refusée",
-            `« ${r.title} » a été ${decision === "acceptee" ? "acceptée et ajoutée au périmètre" : "refusée"}.`,
+            `« ${r.title} » a été ${decision === "acceptee" ? "acceptée — à intégrer explicitement au périmètre si besoin" : "refusée"}.`,
           );
           pushToast(decision === "acceptee" ? `Demande « ${r.title} » acceptée` : `Demande « ${r.title} » refusée`);
           return { ...r, status: decision };
