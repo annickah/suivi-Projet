@@ -44,13 +44,13 @@ function BellMenu() {
         {unreadCount > 0 && (
           <span className="absolute top-1 right-1 flex h-2 w-2" aria-hidden="true">
             <span className="animate-ping-dot absolute inline-flex h-full w-full rounded-full bg-ink" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-ink ring-2 ring-white" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-ink ring-2 ring-surface" />
           </span>
         )}
       </button>
 
       {open && (
-        <div className="animate-drop-in absolute right-0 z-40 mt-2 w-[min(21rem,calc(100vw-2rem))] overflow-hidden rounded-lg border border-hairline bg-white shadow-xl shadow-ink/10">
+        <div className="animate-drop-in absolute right-0 z-40 mt-2 w-[min(21rem,calc(100vw-2rem))] overflow-hidden rounded-lg border border-hairline bg-surface shadow-xl shadow-ink/10">
           <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
             <span className="text-sm font-bold text-gray-900">Notifications</span>
             <span className="text-xs text-gray-500">
@@ -124,7 +124,7 @@ export function Topbar() {
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-hairline bg-white">
+    <header className="sticky top-0 z-30 border-b border-hairline bg-surface">
       <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
         <button
           type="button"
