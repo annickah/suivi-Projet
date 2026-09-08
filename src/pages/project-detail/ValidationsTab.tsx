@@ -172,7 +172,7 @@ export function ValidationsTab({ project, mode, clientActor }: { project: Projec
                       />
                       <div
                         role="menu"
-                        className="absolute right-0 z-40 mt-2 w-60 overflow-hidden rounded-md border border-hairline bg-white py-1 shadow-lg"
+                        className="absolute right-0 z-40 mt-2 w-60 overflow-hidden rounded-md border border-hairline bg-surface py-1 shadow-lg"
                       >
                         <p className="px-3 py-1.5 text-[10px] font-semibold tracking-wide text-gray-400 uppercase">
                           Définir le statut
