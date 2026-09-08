@@ -1,11 +1,12 @@
 import { useMemo, useState, type FormEvent } from "react";
-import { Building2, Eye, Mail, MapPin, Phone, Plus, Search } from "lucide-react";
+import { Building2, Eye, Mail, MapPin, Phone, Plus, Search, SearchX } from "lucide-react";
 import { formatDate } from "../data";
 import { useApp } from "../store";
 import { cn } from "../utils/cn";
 import {
   Avatar,
   Card,
+  EmptyState,
   Field,
   GhostButton,
   Modal,
@@ -140,7 +141,7 @@ export function ClientsPage() {
                           <button
                             type="button"
                             onClick={() => openPortal(c.id, first.id)}
-                            className="inline-flex items-center gap-1.5 rounded-md border border-hairline bg-white px-2.5 py-1.5 text-xs font-medium text-gray-600 transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 hover:text-ink active:scale-[0.98]"
+                            className="inline-flex items-center gap-1.5 rounded-md border border-hairline bg-surface px-2.5 py-1.5 text-xs font-medium text-gray-600 transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 hover:text-ink active:scale-[0.98]"
                           >
                             <Eye className="h-3.5 w-3.5" />
                             Ouvrir le suivi
@@ -154,8 +155,12 @@ export function ClientsPage() {
                 })}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-500">
-                      Aucun client ne correspond à votre recherche.
+                    <td colSpan={6}>
+                      <EmptyState
+                        icon={SearchX}
+                        title="Aucun client ne correspond à votre recherche"
+                        hint="Essayez un autre nom, un contact ou une ville."
+                      />
                     </td>
                   </tr>
                 )}
