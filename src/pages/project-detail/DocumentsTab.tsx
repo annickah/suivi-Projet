@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from "react";
-import { Download, Eye, FolderOpen, Plus } from "lucide-react";
+import { Download, Eye, FileX, FolderOpen, Plus } from "lucide-react";
 import { formatDate, type Project } from "../../data";
 import type { DocKind, ProjectDoc } from "../../project";
 import { useApp } from "../../store";
 import { cn } from "../../utils/cn";
-import { Card, Field, GhostButton, Modal, PrimaryButton, inputClass } from "../../components/ui";
+import { Card, EmptyState, Field, GhostButton, Modal, PrimaryButton, inputClass } from "../../components/ui";
 
 export function DocumentsTab({ project, mode }: { project: Project; mode: "admin" | "client" }) {
   const { documents, addDocument, pushToast } = useApp();
@@ -91,7 +91,13 @@ export function DocumentsTab({ project, mode }: { project: Project; mode: "admin
             </GhostButton>
           </div>
         ))}
-        {rows.length === 0 && <p className="px-6 py-10 text-center text-sm text-gray-500">Aucun document partagé pour le moment.</p>}
+        {rows.length === 0 && (
+          <EmptyState
+            icon={FileX}
+            title="Aucun document partagé pour le moment"
+            hint={mode === "admin" ? "Ajoutez un document pour le rendre disponible ici." : "Votre équipe projet vous notifiera dès qu'un document sera partagé."}
+          />
+        )}
       </Card>
 
       <Modal
