@@ -271,7 +271,7 @@ function TaskDetailModal({
               {comments.map((c) => (
                 <div key={c.id} className="flex gap-2.5">
                   <Avatar name={c.author} size="sm" />
-                  <div className="min-w-0 flex-1 rounded-md bg-white p-2.5 ring-1 ring-hairline">
+                  <div className="min-w-0 flex-1 rounded-md bg-surface p-2.5 ring-1 ring-hairline">
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                       <p className="text-[12px] font-semibold text-gray-900">{c.author}</p>
                       <p className="text-[11px] text-gray-400">{formatDateTime(c.at)}</p>
